@@ -38,7 +38,7 @@ func Update(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if sum != hash {
-		return fmt.Errorf("checksum does not match: have = %s / want = %s", sum, hash)
+		return fmt.Errorf("hash does not match: have = %s / want = %s", sum, hash)
 	}
 
 	_, err = s3manager.NewUploader(sess).Upload(&s3manager.UploadInput{
