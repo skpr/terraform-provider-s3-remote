@@ -20,9 +20,9 @@ func Update(d *schema.ResourceData, m interface{}) error {
 	sess := m.(*session.Session)
 
 	var (
-		url    = d.Get(FieldBucket).(string)
-		bucket = d.Get(FieldKey).(string)
-		key    = d.Get(FieldURL).(string)
+		bucket = d.Get(FieldBucket).(string)
+		key    = d.Get(FieldKey).(string)
+		url    = d.Get(FieldURL).(string)
 		hash   = d.Get(FieldHash).(string)
 	)
 

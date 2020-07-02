@@ -14,13 +14,13 @@ func Delete(d *schema.ResourceData, m interface{}) error {
 	client := s3.New(sess)
 
 	var (
-		bucket = d.Get(FieldKey).(string)
-		key = d.Get(FieldURL).(string)
+		bucket = d.Get(FieldBucket).(string)
+		key    = d.Get(FieldKey).(string)
 	)
 
 	_, err := client.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
-		Key: aws.String(key),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		return err
