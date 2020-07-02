@@ -1,12 +1,10 @@
 package remote
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/hashicorp/terraform/helper/schema"
 
@@ -31,26 +29,13 @@ func Update(d *schema.ResourceData, m interface{}) error {
 	defer source.Body.Close()
 
 	_, err = s3manager.NewUploader(sess).Upload(&s3manager.UploadInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-		Body:   source.Body,
+		Bucket:     aws.String(bucket),
+		Key:        aws.String(key),
+		Body:       source.Body,
+		ContentMD5: aws.String(hash),
 	})
 	if err != nil {
 		return err
-	}
-
-	client := s3.New(sess)
-
-	target, err := client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	})
-	if err != nil {
-		return err
-	}
-
-	if *target.ETag != hash {
-		return fmt.Errorf("hash does not match: have = %s / want = %s", *target.ETag, hash)
 	}
 
 	d.SetId(id.Join(bucket, key))
