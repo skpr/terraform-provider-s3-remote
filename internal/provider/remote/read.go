@@ -15,7 +15,7 @@ func Read(d *schema.ResourceData, m interface{}) error {
 	}
 
 	var (
-		url  = d.Get(FieldBucket).(string)
+		url  = d.Get(FieldURL).(string)
 		hash = d.Get(FieldHash).(string)
 	)
 
