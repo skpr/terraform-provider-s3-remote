@@ -11,8 +11,6 @@ const (
 	FieldKey = "key"
 	// FieldURL defines the source URL.
 	FieldURL = "url"
-	// FieldHash defines the source hash.
-	FieldHash = "hash"
 )
 
 // Resource returns this packages resource.
@@ -35,10 +33,6 @@ func Resource() *schema.Resource {
 				ForceNew: true,
 			},
 			FieldURL: {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			FieldHash: {
 				Type:     schema.TypeString,
 				Required: true,
 			},

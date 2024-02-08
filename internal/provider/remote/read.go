@@ -15,14 +15,12 @@ func Read(d *schema.ResourceData, m interface{}) error {
 	}
 
 	var (
-		url  = d.Get(FieldURL).(string)
-		hash = d.Get(FieldHash).(string)
+		url = d.Get(FieldURL).(string)
 	)
 
 	d.Set(FieldBucket, bucket)
 	d.Set(FieldKey, key)
 	d.Set(FieldURL, url)
-	d.Set(FieldHash, hash)
 
 	return nil
 }
