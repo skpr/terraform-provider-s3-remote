@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
 
-	"github.com/codedropau/terraform-provider-s3-remote/internal/provider/remote"
+	"github.com/skpr/terraform-provider-s3-remote/internal/provider/remote"
 )
 
 const (
