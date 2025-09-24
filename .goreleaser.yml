@@ -10,5 +10,5 @@ builds:
 release:
   prerelease: auto
   github:
-    owner: codedropau
+    owner: skpr
     name: terraform-provider-s3-remote
