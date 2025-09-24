@@ -1,12 +1,14 @@
-name: ☁️ Publish Artifacts
+name: ☁️ Release
 
 on:
   push:
     tags:
-      - v0.*
+      - 'v[0-9]+.[0-9]+.[0-9]+[0-9A-Za-z]?'
+
+
 
 jobs:
-  artifacts:
+  release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -14,17 +16,23 @@ jobs:
 
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 📦 Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version-file: 'go.mod'
 
-      - name: 📦 Build package
-        run: make build
+      - name: 📦 Install dependencies
+        run: go mod vendor
 
-      - name: ☁️ Release
-        uses: softprops/action-gh-release@v1
+      - name: 📦 Install GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          files: bin/*
+          install-only: true
+
+      - name: ☁️ GoReleaser
+        run: |
+          goreleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
