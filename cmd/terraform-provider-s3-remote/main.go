@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
@@ -40,17 +40,22 @@ func main() {
 					},
 				},
 				ConfigureFunc: func(d *schema.ResourceData) (interface{}, error) {
-					cfg := &aws.Config{}
+					var opts []func(*config.LoadOptions) error
 
 					if v, ok := d.GetOk(FieldRegion); ok {
-						cfg.Region = aws.String(v.(string))
+						opts = append(opts, config.WithRegion(v.(string)))
 					}
 
 					if v, ok := d.GetOk(FieldProfile); ok {
-						cfg.Credentials = credentials.NewSharedCredentials("", v.(string))
+						opts = append(opts, config.WithSharedConfigProfile(v.(string)))
 					}
 
-					return session.NewSession(cfg)
+					cfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
+					if err != nil {
+						return nil, err
+					}
+
+					return cfg, nil
 				},
 				ResourcesMap: map[string]*schema.Resource{
 					ResourceBucketObjectRemote: remote.Resource(),

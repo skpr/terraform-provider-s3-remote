@@ -2,13 +2,14 @@ package remote
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
 
 	"github.com/skpr/terraform-provider-s3-remote/internal/md5"
@@ -17,7 +18,7 @@ import (
 
 // Update the Project.
 func Update(d *schema.ResourceData, m interface{}) error {
-	sess := m.(*session.Session)
+	cfg := m.(aws.Config)
 
 	var (
 		bucket   = d.Get(FieldBucket).(string)
@@ -53,7 +54,9 @@ func Update(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("hash mismatch: %s != %s", hashHave, hashWant)
 	}
 
-	_, err = s3manager.NewUploader(sess).Upload(&s3manager.UploadInput{
+	client := s3.NewFromConfig(cfg)
+
+	_, err = manager.NewUploader(client).Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(bodyBytes),

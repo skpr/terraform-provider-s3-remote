@@ -1,24 +1,25 @@
 package remote
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 // Delete the S3 object.
 func Delete(d *schema.ResourceData, m interface{}) error {
-	sess := m.(*session.Session)
+	cfg := m.(aws.Config)
 
-	client := s3.New(sess)
+	client := s3.NewFromConfig(cfg)
 
 	var (
 		bucket = d.Get(FieldBucket).(string)
 		key    = d.Get(FieldKey).(string)
 	)
 
-	_, err := client.DeleteObject(&s3.DeleteObjectInput{
+	_, err := client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
