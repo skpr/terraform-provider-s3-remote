@@ -5,11 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Delete the S3 object.
-func Delete(d *schema.ResourceData, m interface{}) error {
+func Delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	cfg := m.(aws.Config)
 
 	client := s3.NewFromConfig(cfg)
@@ -19,12 +20,12 @@ func Delete(d *schema.ResourceData, m interface{}) error {
 		key    = d.Get(FieldKey).(string)
 	)
 
-	_, err := client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+	_, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

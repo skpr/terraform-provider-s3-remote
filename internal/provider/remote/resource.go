@@ -1,7 +1,7 @@
 package remote
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -18,29 +18,33 @@ const (
 // Resource returns this packages resource.
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		Create: Update,
-		Read:   Read,
-		Update: Update,
-		Delete: Delete,
+		CreateContext: Update,
+		ReadContext:   Read,
+		UpdateContext: Update,
+		DeleteContext: Delete,
 
 		Schema: map[string]*schema.Schema{
 			FieldBucket: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Name of the S3 bucket to upload the file to.",
 			},
 			FieldKey: {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Object key to store the file under.",
 			},
 			FieldURL: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "URL of the remote file to download.",
 			},
 			FieldHash: {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Expected MD5 hash (hex encoded) of the remote file.",
 			},
 		},
 	}

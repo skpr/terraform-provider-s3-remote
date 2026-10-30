@@ -8,16 +8,16 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/skpr/terraform-provider-s3-remote/internal/md5"
 	"github.com/skpr/terraform-provider-s3-remote/internal/provider/remote/id"
 )
 
-// Update the Project.
-func Update(d *schema.ResourceData, m interface{}) error {
+// Update downloads the remote file, verifies its hash and uploads it to S3.
+func Update(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	cfg := m.(aws.Config)
 
 	var (
@@ -27,45 +27,54 @@ func Update(d *schema.ResourceData, m interface{}) error {
 		hashWant = d.Get(FieldHash).(string)
 	)
 
-	source, err := http.Get(url)
+	body, err := download(ctx, url)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	if source.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to get source: %s", source.Status)
-	}
-
-	bodyBytes, err := io.ReadAll(source.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read source body: %w", err)
-	}
-
-	err = source.Body.Close()
-	if err != nil {
-		return fmt.Errorf("failed to close source body: %w", err)
-	}
-
-	bodyString := string(bodyBytes)
-
-	hashHave := md5.GetHash(bodyString)
+	hashHave := md5.GetHash(body)
 
 	if hashHave != hashWant {
-		return fmt.Errorf("hash mismatch: %s != %s", hashHave, hashWant)
+		return diag.Errorf("hash mismatch: %s != %s", hashHave, hashWant)
 	}
 
 	client := s3.NewFromConfig(cfg)
 
-	_, err = manager.NewUploader(client).Upload(context.TODO(), &s3.PutObjectInput{
+	_, err = client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
-		Body:   bytes.NewReader(bodyBytes),
+		Body:   bytes.NewReader(body),
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(id.Join(bucket, key))
 
 	return nil
+}
+
+// download returns the body of the file at the given URL.
+func download(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get source: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get source: %s", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read source body: %w", err)
+	}
+
+	return body, nil
 }

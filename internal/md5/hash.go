@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 )
 
-// GetHash returns the MD5 hash of the given text.
-func GetHash(text string) string {
-	hash := md5.Sum([]byte(text))
+// GetHash returns the MD5 hash of the given data.
+func GetHash(data []byte) string {
+	hash := md5.Sum(data)
 	return hex.EncodeToString(hash[:])
 }

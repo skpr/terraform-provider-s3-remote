@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/plugin"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 
 	"github.com/skpr/terraform-provider-s3-remote/internal/provider/remote"
 )
@@ -23,23 +23,23 @@ const (
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: func() terraform.ResourceProvider {
+		ProviderFunc: func() *schema.Provider {
 			return &schema.Provider{
 				Schema: map[string]*schema.Schema{
 					FieldProfile: {
 						Type:        schema.TypeString,
 						Optional:    true,
 						DefaultFunc: schema.EnvDefaultFunc("AWS_PROFILE", ""),
-						Description: "AWS Profile for authentication.",
+						Description: "AWS profile for authentication.",
 					},
 					FieldRegion: {
 						Type:        schema.TypeString,
 						Optional:    true,
 						DefaultFunc: schema.EnvDefaultFunc("AWS_REGION", ""),
-						Description: "AWS Profile for authentication.",
+						Description: "AWS region where the bucket is located.",
 					},
 				},
-				ConfigureFunc: func(d *schema.ResourceData) (interface{}, error) {
+				ConfigureContextFunc: func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 					var opts []func(*config.LoadOptions) error
 
 					if v, ok := d.GetOk(FieldRegion); ok {
@@ -50,9 +50,9 @@ func main() {
 						opts = append(opts, config.WithSharedConfigProfile(v.(string)))
 					}
 
-					cfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
+					cfg, err := config.LoadDefaultConfig(ctx, opts...)
 					if err != nil {
-						return nil, err
+						return nil, diag.FromErr(err)
 					}
 
 					return cfg, nil

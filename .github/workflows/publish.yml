@@ -5,8 +5,6 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+[0-9A-Za-z]?'
 
-
-
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -16,23 +14,16 @@ jobs:
 
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 📦 Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
 
-      - name: 📦 Install dependencies
-        run: go mod vendor
-
-      - name: 📦 Install GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          install-only: true
-
       - name: ☁️ GoReleaser
-        run: |
-          goreleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
