@@ -12,8 +12,19 @@ updates:
       golang-x:
         patterns:
           - golang.org/x/*
+      gomod-security-deps:
+        applies-to: security-updates
+        patterns: [ "*" ]
+    cooldown:
+      default-days: 2
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions-security-deps:
+        applies-to: security-updates
+        patterns: [ "*" ]
+    cooldown:
+      default-days: 2
