@@ -9,9 +9,19 @@ updates:
       aws-sdk:
         patterns:
           - github.com/aws/*
+        update-types: [ "minor", "patch" ]
+      aws-sdk-major:
+        patterns:
+          - github.com/aws/*
+        update-types: [ "major" ]
       golang-x:
         patterns:
           - golang.org/x/*
+        update-types: [ "minor", "patch" ]
+      golang-x-major:
+        patterns:
+          - golang.org/x/*
+        update-types: [ "major" ]
       gomod-security-deps:
         applies-to: security-updates
         patterns: [ "*" ]
